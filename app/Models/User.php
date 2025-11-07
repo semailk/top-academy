@@ -6,6 +6,9 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 /**
  * @property string $name
@@ -15,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  */
 class User extends Model implements Authenticatable
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $fillable = [
       'name',
       'email',
@@ -26,13 +29,11 @@ class User extends Model implements Authenticatable
         'password',
     ];
 
-    public function image(): HasOne
+
+    public function image(): MorphOne
     {
-        return $this->hasOne(UserImages::class);
+        return $this->morphOne(Image::class, 'imageable');
     }
-
-
-
 
     public function getAuthIdentifierName()
     {

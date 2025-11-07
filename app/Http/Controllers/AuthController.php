@@ -5,19 +5,14 @@ namespace App\Http\Controllers;
 use App\DTO\UserDTO;
 use App\Http\Requests\RegisterPostRequest;
 use App\Models\User;
-use App\Models\UserImages;
-use App\Repository\User\UserRepository;
 use App\Repository\User\UserRepositoryInterface;
-use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class AuthController extends Controller
@@ -36,7 +31,6 @@ class AuthController extends Controller
     public function register(RegisterPostRequest $registerRequest): RedirectResponse
     {
         $validated = $registerRequest->validated();
-        $basePath = 'storage/images/';
 
         if (empty($validated)) {
             throw new BadRequestHttpException();
@@ -46,19 +40,11 @@ class AuthController extends Controller
         try {
             $userDTO = new UserDTO($validated['name'], $validated['email'], $validated['password']);
             $user = $this->userRepository->store($userDTO);
-
-            foreach ($registerRequest->files as $images) {
-                /** @var UploadedFile $image */
-                foreach ($images as $image) {
-                    $fileName = md5(md5(Str::random()))  . '.jpeg';
-
-                    $image->move(storage_path('app/public/images'), $fileName);
-                    $newUserImage = new UserImages();
-                    $newUserImage->user_id = $user->id;
-                    $newUserImage->path = $basePath . $fileName;
-                    $newUserImage->save();
-                }
-            }
+            $path = $registerRequest->file('image')->store('images', 'public');
+            $urlImage = asset('storage/' . $path);
+            $user->image()->create([
+                'url' => $urlImage,
+            ]);
             DB::commit();
         }catch (\Exception $exception){
             Log::critical($exception->getMessage());

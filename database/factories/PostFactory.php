@@ -5,9 +5,9 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserImages>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Post>
  */
-class UserImagesFactory extends Factory
+class PostFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -17,6 +17,7 @@ class UserImagesFactory extends Factory
     public function definition(): array
     {
         return [
-            'path' => $this->faker->image(storage_path('app/public/images'),640,480, null, true)
-        ];}
+            //
+        ];
+    }
 }

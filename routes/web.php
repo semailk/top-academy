@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('auth')->group( function (){
@@ -16,3 +17,5 @@ Route::prefix('auth')->group( function (){
 
 Route::get('search', [SearchController::class, 'search'])->name('search');
 Route::get('search-ajax', [SearchController::class, 'searchAjax'])->name('search.ajax');
+
+Route::get('test', [TestController::class, 'test'])->name('test');

@@ -10,7 +10,7 @@
 </head>
 <body>
 <div class="container mt-2">
-    <form action="{{ route('register') }}" method="post" multiple enctype="multipart/form-data">
+    <form action="{{ route('register') }}" method="post" enctype="multipart/form-data">
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul>
@@ -43,7 +43,7 @@
             <div class="row mb-3">
                 <label for="inputPassword3" class="col-sm-2 col-form-label">Images</label>
                 <div class="col-sm-10">
-                    <input multiple name="images[]" type="file" class="form-control" id="inputPassword3">
+                    <input name="image" type="file" class="form-control" id="inputPassword3">
                 </div>
             </div>
         <button type="submit" class="btn btn-primary">Sign in</button>
