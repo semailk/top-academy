@@ -2,24 +2,25 @@
 
 namespace App\Models;
 
+use App\Policies\PostPolicy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
- * @property string $name
- * @property int $id
+ * @property string $content
+ * @property int $user_id
  */
 class Post extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-      'name'
+        'content',
+        'user_id',
     ];
 
-    public function image(): MorphOne
+    public function user()
     {
-        return $this->morphOne(Image::class, 'imageable');
+        return $this->belongsTo(User::class);
     }
 }

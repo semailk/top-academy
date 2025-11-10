@@ -2,18 +2,18 @@
 
 namespace App\Providers;
 
-use App\Repository\User\UserRepository;
-use App\Repository\User\UserRepositoryInterface;
-use Illuminate\Support\ServiceProvider;
+use App\Models\Post;
+use App\Policies\PostPolicy;
+use Illuminate\Support\Facades\Gate;
 
-class AppServiceProvider extends ServiceProvider
+class AppServiceProvider extends AuthServiceProvider
 {
     /**
      * Register any application services.
      */
     public function register(): void
     {
-        $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
+        //
     }
 
     /**
@@ -21,6 +21,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::policy(Post::class, PostPolicy::class);
     }
 }

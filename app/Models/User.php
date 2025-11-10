@@ -2,71 +2,74 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
- * @property string $name
+ * @property string $username
  * @property string $email
  * @property string $password
- * @property int $id
+ * @property string $status
+ * @property string $avatar
  */
-class User extends Model implements Authenticatable
+class User extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, Notifiable;
+
     protected $fillable = [
-      'name',
-      'email',
-      'password',
+        'username',
+        'email',
+        'password',
+        'status',
+        'avatar'
+    ];
+
+    protected $appends = [
+        'avatar_url'
     ];
 
     protected $hidden = [
         'password',
+        'remember_token',
     ];
 
-
-    public function image(): MorphOne
+    protected function casts(): array
     {
-        return $this->morphOne(Image::class, 'imageable');
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed'
+        ];
     }
 
-    public function getAuthIdentifierName()
+    public function posts(): HasMany
     {
-        // TODO: Implement getAuthIdentifierName() method.
+        return $this->hasMany(Post::class);
     }
 
-    public function getAuthIdentifier()
+    public function isAdmin(): bool
     {
-        // TODO: Implement getAuthIdentifier() method.
+        return $this->status === 'admin';
     }
 
-    public function getAuthPasswordName()
+    public function getAvatarUrlAttribute(): string
     {
-        // TODO: Implement getAuthPasswordName() method.
+        return isset($this->attributes['avatar']) && $this->attributes['avatar']
+                ? \url($this->attributes['avatar']) : url('images.png');
     }
 
-    public function getAuthPassword()
+    public function setAvatarAttribute(?string $value): void
     {
-        // TODO: Implement getAuthPassword() method.
+        $this->attributes['avatar'] = $value ?? public_path('images.png');
     }
 
-    public function getRememberToken()
-    {
-        // TODO: Implement getRememberToken() method.
-    }
-
-    public function setRememberToken($value)
-    {
-        // TODO: Implement setRememberToken() method.
-    }
-
-    public function getRememberTokenName()
-    {
-        // TODO: Implement getRememberTokenName() method.
-    }
+    // Добавляем метод для совместимости с Laravel Auth
+    // public function getAuthIdentifierName()
+    // {
+    //     return 'username';
+    // }
 }
