@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
@@ -32,7 +33,7 @@ class PostController extends Controller
 
         // Принудительно получаем числовой ID
         $userId = Auth::user()->id; // Используем прямое обращение к модели
-    
+
         Post::create([
             'content' => $request->content,
             'user_id' => $userId, // Гарантированно число
@@ -59,7 +60,7 @@ class PostController extends Controller
 
     //         Post::create([
     //             'content' => $request->content,
-    //             'user_id' => Auth::id(), 
+    //             'user_id' => Auth::id(),
     //         ]);
 
     //         return redirect()->route('posts.index')->with('success', 'Пост успешно создан!');
@@ -72,11 +73,12 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
-        // Безопасная проверка на админа
-        $isAdmin = Auth::user()->status === 'admin';
-        if ($post->user_id !== Auth::id() && !$isAdmin) {
+        $response = Gate::inspect('view', $post);
+
+        if (!$response->allowed()) {
             abort(403);
         }
+
         return view('posts.edit', compact('post'));
     }
 
