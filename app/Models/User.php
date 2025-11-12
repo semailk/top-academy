@@ -1,22 +1,14 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
+// Все необходимые импорты
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\URL;
 
-/**
- * @property string $username
- * @property string $email
- * @property string $password
- * @property string $status
- * @property string $avatar
- */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -26,11 +18,7 @@ class User extends Authenticatable
         'email',
         'password',
         'status',
-        'avatar'
-    ];
-
-    protected $appends = [
-        'avatar_url'
+        'avatar',
     ];
 
     protected $hidden = [
@@ -42,34 +30,32 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed'
+            'password' => 'hashed',
         ];
     }
 
-    public function posts(): HasMany
+    // Убедимся что Post модель доступна
+    public function posts()
     {
-        return $this->hasMany(Post::class);
+        return $this->hasMany(\App\Models\Post::class);
     }
 
-    public function isAdmin(): bool
+    public function isAdmin()
     {
         return $this->status === 'admin';
     }
 
-    public function getAvatarUrlAttribute(): string
+    public function getAvatarUrl()
     {
-        return isset($this->attributes['avatar']) && $this->attributes['avatar']
-                ? \url($this->attributes['avatar']) : url('images.png');
-    }
+        if ($this->avatar) {
+            $filePath = 'public/avatars/' . $this->avatar;
 
-    public function setAvatarAttribute(?string $value): void
-    {
-        $this->attributes['avatar'] = $value ?? public_path('images.png');
-    }
+            if (Storage::exists($filePath)) {
+                // Используем прямой роут вместо симлинка
+                return route('avatar.direct', ['filename' => $this->avatar]);
+            }
+        }
 
-    // Добавляем метод для совместимости с Laravel Auth
-    // public function getAuthIdentifierName()
-    // {
-    //     return 'username';
-    // }
+        return asset('images/default-avatar.png');
+    }
 }

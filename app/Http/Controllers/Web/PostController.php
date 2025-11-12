@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Web;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 
 class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user')->latest()->get();
+        $posts = Post::with('user')->paginate(10);
         return view('posts.index', compact('posts'));
     }
 
@@ -73,12 +72,11 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
-        $response = Gate::inspect('view', $post);
-
-        if (!$response->allowed()) {
+        // Безопасная проверка на админа
+        $isAdmin = Auth::user()->status === 'admin';
+        if ($post->user_id !== Auth::id() && !$isAdmin) {
             abort(403);
         }
-
         return view('posts.edit', compact('post'));
     }
 
