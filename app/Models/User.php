@@ -5,10 +5,19 @@ namespace App\Models;
 
 // Все необходимые импорты
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * @property string $username
+ * @property string $email
+ * @property string $password
+ * @property string $avatar
+ * @property int $role_id
+ */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
@@ -17,7 +26,7 @@ class User extends Authenticatable
         'username',
         'email',
         'password',
-        'status',
+        'role_id',
         'avatar',
     ];
 
@@ -40,11 +49,6 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Post::class);
     }
 
-    public function isAdmin()
-    {
-        return $this->status === 'admin';
-    }
-
     public function getAvatarUrl()
     {
         if ($this->avatar) {
@@ -57,5 +61,15 @@ class User extends Authenticatable
         }
 
         return asset('images/default-avatar.png');
+    }
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role->name === 'admin';
     }
 }

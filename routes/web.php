@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\PostCommentController;
 use App\Http\Controllers\Web\PostController;
 use App\Http\Controllers\Web\UserController;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
     // Posts
     Route::resource('posts', PostController::class);
+
+    //POST COMMENT
+    Route::post('comments', [PostCommentController::class, 'store'])->name('comments.store');
 
     // Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

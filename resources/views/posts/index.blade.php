@@ -29,16 +29,17 @@
             </div>
 
             <!-- Правая часть с кнопками (если доступно) -->
-            @if(Auth::id() === $post->user_id || Auth::user()->isAdmin())
+
             <div class="flex space-x-2">
                 <a href="{{ route('posts.edit', $post) }}" class="text-blue-600 hover:text-blue-800">Редактировать</a>
+                @if(Auth::id() === $post->user_id || Auth::user()->isAdmin())
                 <form method="POST" action="{{ route('posts.destroy', $post) }}" class="inline">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="text-red-600 hover:text-red-800" onclick="return confirm('Удалить пост?')">Удалить</button>
                 </form>
+                @endif
             </div>
-            @endif
         </div>
         <p class="text-gray-700 whitespace-pre-line">{{ $post->content }}</p>
     </div>

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use App\Models\Post;
 use Illuminate\Database\Seeder;
@@ -12,44 +13,62 @@ class TestDataSeeder extends Seeder
 {
     public function run()
     {
-        // Создаем тестовых пользователей
+        $roleNames = [
+            'user',
+            'admin'
+        ];
         $users = [
             [
                 'username' => 'alexey',
                 'email' => 'alexey@example.com',
-                'password' => Hash::make('111111'),
-                'status' => 'user',
+                'password' => Hash::make('111111')
             ],
             [
                 'username' => 'maria',
                 'email' => 'maria@example.com',
-                'password' => Hash::make('111111'),
-                'status' => 'user',
+                'password' => Hash::make('111111')
             ],
             [
                 'username' => 'sergey',
                 'email' => 'sergey@example.com',
-                'password' => Hash::make('111111'),
-                'status' => 'user',
+                'password' => Hash::make('111111')
             ],
             [
                 'username' => 'olga',
                 'email' => 'olga@example.com',
-                'password' => Hash::make('111111'),
-                'status' => 'user',
+                'password' => Hash::make('111111')
             ],
             [
                 'username' => 'admin',
                 'email' => 'admin@example.com',
-                'password' => Hash::make('111111'),
-                'status' => 'admin',
+                'password' => Hash::make('111111')
             ],
         ];
 
-        // Создаем пользователей
-        foreach ($users as $userData) {
-            User::create($userData);
+        foreach ($roleNames as $name) {
+            Role::query()->create([
+                'name' => $name
+            ]);
         }
+
+        foreach ($users as $user) {
+            if ($user['username'] === 'admin') {
+                User::query()->firstOrCreate([ 'email' => $user['email'],],[
+
+                    'username' => $user['username'],
+                    'password' => $user['password'],
+                    'role_id' => Role::query()->where('name', 'admin')->first()?->id
+                ]);
+            } else {
+                User::query()->firstOrCreate(
+                    [ 'email' => $user['email']]
+                    ,['username' => $user['username'],
+                    'password' => $user['password'],
+                    'role_id' => Role::query()->where('name', 'user')->first()?->id
+                ]);
+            }
+        }
+
 
         // Сообщения для постов
         $postMessages = [

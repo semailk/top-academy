@@ -17,7 +17,9 @@
                 <div class="flex space-x-4">
                     <a href="{{ route('posts.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Главная</a>
                     <a href="{{ route('posts.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Посты</a>
+                    @if(auth()->check() && auth()->user()->isAdmin())
                     <a href="{{ route('users.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Пользователи</a>
+                    @endif
                     <a href="{{ route('about') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">О нас</a>
                 </div>
 
