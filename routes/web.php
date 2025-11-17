@@ -28,6 +28,8 @@ Route::middleware('auth')->group(function () {
 
     //POST COMMENT
     Route::post('comments', [PostCommentController::class, 'store'])->name('comments.store');
+    Route::patch('comments/{postComment}', [PostCommentController::class, 'update'])->name('comments.update');
+    Route::delete('comments/{postComment}', [PostCommentController::class, 'destroy'])->name('comments.destroy');
 
     // Users
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

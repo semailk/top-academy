@@ -33,10 +33,30 @@
             <h2 class="text-xl font-semibold mb-4">Комментарии</h2>
 
             @forelse($comments as $comment)
-                <div class="border border-gray-200 rounded-md p-3 mb-3 bg-gray-50">
+                <div id="comment_{{$comment->id}}" class="border border-gray-200 rounded-md p-3 mb-3 bg-gray-50">
                     <p class="text-gray-700">{{ $comment->comment }}</p>
                     <div class="text-sm text-gray-500 mt-2">
                         Автор: {{ $comment->user->username }} | {{ $comment->created_at->diffForHumans() }}
+                    </div>
+
+                    <div class="flex items-center gap-3 mt-3">
+                        <form action="{{ route('comments.update', $comment->id) }}" method="POST" class="comment-update-form">
+                            @csrf
+                            @method('PATCH')
+                            <button type="button" data-id="{{ $comment->id }}"
+                                    class="btn-update-comment px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition">
+                                Обновить
+                            </button>
+                        </form>
+
+                        <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="comment-delete-form">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" data-id="{{ $comment->id }}"
+                                    class="btn-delete-comment px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition">
+                                Удалить
+                            </button>
+                        </form>
                     </div>
                 </div>
             @empty
@@ -46,7 +66,6 @@
             {{ $comments->links() }}
         </div>
 
-        {{-- Форма добавления комментария --}}
         @auth
             <div class="mt-6">
                 <form method="POST" action="{{ route('comments.store', $post) }}">
@@ -65,4 +84,44 @@
         @endauth
 
     </div>
+    <script>
+        $(document).ready(function () {
+            $('.btn-update-comment').click(function (){
+                let btn = $(this);
+                let form = btn.closest('form');
+                let id = btn.data('id');
+                let commentEl = $('#comment_' + id);
+
+                if (btn.text().trim() === 'Обновить') {
+                    let text = commentEl.find('p').text();
+                    commentEl.find('p').remove();
+                    commentEl.prepend(
+                        '<input type="text" class="w-full px-2 py-1 border border-gray-300 rounded mb-2 comment-input" value="' + text + '">'
+                    );
+
+                    form.append('<input type="hidden" name="comment" class="hidden-comment-input" value="' + text + '">');
+
+                    commentEl.find('.comment-input').on('input', function () {
+                        form.find('.hidden-comment-input').val($(this).val());
+                    });
+
+                    btn.text('Сохранить');
+                    return;
+                }
+
+                if (btn.text().trim() === 'Сохранить') {
+                    form.submit();
+                }
+            });
+
+            $('.btn-delete-comment').click(function () {
+                let form = $(this).closest('form');
+                let confirmDelete = confirm('Удалить комментарий?');
+
+                if (confirmDelete) {
+                    form.submit();
+                }
+            });
+        });
+    </script>
 @endsection

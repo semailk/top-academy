@@ -46,12 +46,7 @@ class PostController extends Controller
 
     public function edit(Post $post)
     {
-        // Безопасная проверка на админа
-//        $isAdmin = Auth::user()->status === 'admin';
-//        if ($post->user_id !== Auth::id() && !$isAdmin) {
-//            abort(403);
-//        }
-        $comments = $post->comments()->paginate(3);
+        $comments = $post->comments()->orderByDesc('created_at')->paginate(3);
         return view('posts.edit', compact('post', 'comments'));
     }
 
