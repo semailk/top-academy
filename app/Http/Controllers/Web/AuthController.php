@@ -2,10 +2,16 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Jobs\MailSendJob;
+use App\Jobs\VerifyMailSendJob;
+use App\Mail\WelcomeRegisterMail;
+use App\Models\Role;
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
@@ -37,7 +43,12 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'status' => 'user',
+            'role_id' => Role::query()
+                ->whereRaw('LOWER(name) = ?', [strtolower('uSeR')])
+                ->first()?->id
         ]);
+
+        dispatch(new VerifyMailSendJob($user));
 
         Auth::login($user);
 
