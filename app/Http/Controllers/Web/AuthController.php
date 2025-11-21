@@ -2,46 +2,39 @@
 
 namespace App\Http\Controllers\Web;
 
-use App\Jobs\MailSendJob;
+use App\Http\Requests\RegisterRequest;
+use App\Jobs\PasswordResetMailSendJob;
 use App\Jobs\VerifyMailSendJob;
-use App\Mail\WelcomeRegisterMail;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
 
 class AuthController extends Controller
 {
-    public function showLogin()
+    public function showLogin(): View
     {
         return view('auth.login');
     }
 
-    public function showRegister()
+    public function showRegister(): View
     {
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(RegisterRequest $registerRequest): RedirectResponse
     {
-        $validator = Validator::make($request->all(), [
-            'username' => 'required|string|max:255|unique:users',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-        ]);
+        $validator = $registerRequest->validated();
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $user = User::create([
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+        $user = User::query()->create([
+            'username' => $validator['username'],
+            'email' => $validator['email'],
+            'password' => Hash::make($validator['password']),
             'status' => 'user',
             'role_id' => Role::query()
                 ->whereRaw('LOWER(name) = ?', [strtolower('uSeR')])
@@ -55,7 +48,7 @@ class AuthController extends Controller
         return redirect()->route('posts.index');
     }
 
-    public function login(Request $request)
+    public function login(Request $request): RedirectResponse
     {
         // Позволяем логин по username или email
         $loginType = filter_var($request->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
@@ -78,11 +71,57 @@ class AuthController extends Controller
         ])->onlyInput('login');
     }
 
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+        return redirect()->route('login');
+    }
+
+    public function showResetPassword(): View
+    {
+        return view('auth.passwords.reset');
+    }
+
+    public function resetPassword(Request $request): RedirectResponse
+    {
+        $user = User::query()
+            ->where('username', $request->input('username'))
+            ->first();
+
+        if ($user) {
+            $maskedEmail = Str::mask($user->email, '*', 3, -3);
+
+            dispatch(new PasswordResetMailSendJob($user));
+            return back()->with(['success' => 'Письмо с сбросом пароля отправлена на почту ' . $maskedEmail .'.' ]);
+        }
+
+        return back()->withErrors(['errors' => 'Данного пользователя не существует!']);
+    }
+
+    public function userPasswordReset(Request $request,User $user, string $hash): View
+    {
+        if (! $request->hasValidSignature()) {
+            abort(400, 'Invalid or expired link');
+        }
+
+        if ($hash !== sha1($user->email)) {
+            abort(400, 'Invalid signature');
+        }
+
+        return view('auth.passwords.user-password-reset', ['user' => $user]);
+    }
+
+    public function changePassword(Request $request, User $user): RedirectResponse
+    {
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed'
+        ]);
+
+        $user->password = Hash::make($request->input('password'));
+        $user->save();
+
         return redirect()->route('login');
     }
 }

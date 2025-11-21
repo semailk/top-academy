@@ -3,9 +3,13 @@
 @section('content')
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-3xl font-bold">Все посты</h1>
+    @if($category)
+        <span class="text-3xl font-bold">{{ $category->name }}</span>
+    @endif
     <a href="{{ route('posts.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
         Создать пост
     </a>
+
 </div>
 
 <div id="data-box" class="space-y-6">

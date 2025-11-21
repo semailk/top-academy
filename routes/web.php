@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\CategoryController;
 use App\Http\Controllers\Web\PostCommentController;
 use App\Http\Controllers\Web\PostController;
 use App\Http\Controllers\Web\UserController;
@@ -16,11 +17,15 @@ Route::get('/', function () {
 });
 
 // Auth routes
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('login', [AuthController::class, 'login']);
+Route::get('register', [AuthController::class, 'showRegister'])->name('register');
+Route::post('register', [AuthController::class, 'register']);
+Route::post('logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('reset-password', [AuthController::class, 'showResetPassword'])->name('password.reset');
+Route::get('user-reset-password/{user}/{hash}', [AuthController::class, 'userPasswordReset'])->name('user.password.reset');
+Route::post('change-password/{user}', [AuthController::class, 'changePassword'])->name('change.password');
+Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('password.reset.post');
 
 // Protected routes
 Route::middleware('auth')->group(function () {
@@ -40,6 +45,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserController::class, 'profile'])->name('profile');
     Route::post('/profile', [UserController::class, 'updateProfile'])->name('profile.update');
     Route::post('/profile/avatar-remove', [UserController::class, 'removeAvatar'])->name('avatar.remove');
+
+    // Category
+    Route::get('/show/{category}', [CategoryController::class, 'show'])->name('category.show');
 
     // About
     Route::get('/about', function () {

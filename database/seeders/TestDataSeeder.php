@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Role;
 use App\Models\User;
 use App\Models\Post;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 
@@ -94,13 +97,107 @@ class TestDataSeeder extends Seeder
             'Сообщество разработчиков всегда готово помочь.',
         ];
 
+        $categories = [
+            'Спорт' => [
+                'Футбол',
+                'Бокс',
+                'Киберспорт',
+                'Баскетбол',
+                'Волейбол',
+                'Формула-1',
+                'Теннис',
+                'Хоккей'
+            ],
+
+            'Политика' => [
+                'Мировая политика',
+                'Политика России',
+                'Политика США',
+                'Выборы',
+                'Международные отношения',
+                'Конфликты и санкции',
+                'Геополитика',
+            ],
+
+            'Технологии' => [
+                'Гаджеты',
+                'Мобильные технологии',
+                'Искусственный интеллект',
+                'IT-индустрия',
+                'Кибербезопасность',
+                'Криптовалюты и блокчейн',
+            ],
+
+            'Экономика' => [
+                'Финансы',
+                'Бизнес',
+                'Инвестиции',
+                'Рынки и биржи',
+                'Недвижимость',
+                'Энергетика',
+                'Мировая экономика'
+            ],
+
+            'Культура' => [
+                'Музыка',
+                'Кино',
+                'Театр',
+                'Литература',
+                'Искусство',
+                'Выставки',
+                'История'
+            ],
+
+            'Здоровье' => [
+                'Медицина',
+                'Фитнес',
+                'Питание',
+                'Психология',
+                'Лайфхаки для здоровья'
+            ],
+
+            'Путешествия' => [
+                'Туризм',
+                'Отели и отдых',
+                'Авиаперелёты',
+                'Гиды по странам',
+                'Путевые заметки'
+            ],
+
+            'Развлечения' => [
+                'Кино и сериалы',
+                'Шоу-бизнес',
+                'Юмор',
+                'Интервью',
+                'Игры'
+            ]
+        ];
+
+        foreach ($categories as $categoryName => $categoriesArray) {
+            $parentCategory = Category::query()->firstOrCreate([
+                'parent_id' => null,
+                'name' => $categoryName
+            ]);
+            foreach ($categoriesArray as $category) {
+                 Category::query()->firstOrCreate([
+                   'parent_id' => $parentCategory->id,
+                   'name' => $category
+                ]);
+            }
+        }
+
         // Создаем посты для каждого пользователя
         $users = User::all();
         $postIndex = 0;
 
+        /** @var Collection $subCategories */
+        $subCategories = Category::dontParent()->get();
+
         foreach ($users as $user) {
             for ($i = 1; $i <= 4; $i++) {
+                $randomSubCategoryId = $subCategories->random(1)->first()->id;
                 Post::create([
+                    'category_id' => $randomSubCategoryId,
                     'content' => "Тестовое сообщение номер {$postIndex}: " . $postMessages[$postIndex % count($postMessages)],
                     'user_id' => $user->id,
                     'created_at' => Carbon::now()->subHours($postIndex * 2),
