@@ -22,7 +22,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $globalCategories = Category::query()
-            ->with('children')
+            ->with(['children.children', 'parent'])
             ->whereNull('parent_id')
             ->get();
 

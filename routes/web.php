@@ -32,7 +32,8 @@ Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('p
 // Protected routes
 Route::middleware('auth')->group(function () {
     // Posts
-    Route::resource('posts', PostController::class);
+    Route::resource('posts', PostController::class)->except('edit');
+    Route::get('edit/{id}', [PostController::class, 'edit'])->name('posts.edit');
 
 
     Route::get('/favorite-session', [FavoriteController::class, 'savePostSession'])->name('favorite.session');

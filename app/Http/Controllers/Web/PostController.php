@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class PostController extends Controller
 {
@@ -46,10 +47,17 @@ class PostController extends Controller
         return view('posts.show', compact('post'));
     }
 
-    public function edit(Post $post)
+    public function edit($postId)
     {
+        if (Cache::has('post_' . $postId)){
+         $post = Cache::get('post_' . $postId);
+        }else{
+            $post = Post::query()->findOrFail($postId);
+            Cache::put('post_' . $postId, $post, 60);
+        }
+
         $comments = $post->comments()->orderByDesc('created_at')->paginate(3);
-        $categories = Category::DontParent()->get();
+        $categories = Category::query()->with('parent')->whereNotNull('parent_id')->get();
 
         return view('posts.edit', compact('post', 'comments', 'categories'));
     }
