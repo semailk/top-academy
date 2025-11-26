@@ -1,7 +1,9 @@
 <?php
 
+use App\Http\Controllers\PostViewController;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\CategoryController;
+use App\Http\Controllers\Web\FavoriteController;
 use App\Http\Controllers\Web\PostCommentController;
 use App\Http\Controllers\Web\PostController;
 use App\Http\Controllers\Web\UserController;
@@ -31,6 +33,12 @@ Route::post('reset-password', [AuthController::class, 'resetPassword'])->name('p
 Route::middleware('auth')->group(function () {
     // Posts
     Route::resource('posts', PostController::class);
+
+
+    Route::get('/favorite-session', [FavoriteController::class, 'savePostSession'])->name('favorite.session');
+
+    //Post View Controller
+    Route::get('posts/view/{post}', [PostViewController::class, 'view'])->name('post.view');
 
     //POST COMMENT
     Route::post('comments', [PostCommentController::class, 'store'])->name('comments.store');

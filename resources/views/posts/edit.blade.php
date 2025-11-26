@@ -16,6 +16,16 @@
                           required>{{ old('content', $post->content) }}</textarea>
             </div>
 
+            <div class="mb-6">
+                <select name="category_id" id="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    @foreach($categories as $category)
+                        <option value="{{ $category->id }}" @if($category->id === $post->category->id) selected @endif>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+
+
             <div class="flex space-x-4">
                 @if(auth()->user()->isAdmin() || $post->user_id == auth()->user()->id)
                     <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
@@ -27,6 +37,18 @@
                 </a>
             </div>
         </form>
+        <div class="flex items-center space-x-2 text-gray-500 text-sm">
+            <!-- Иконка глазика (SVG) -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                 stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+
+            <span class="font-medium">{{ $post->postViews->count() ?? 0 }}</span>
+        </div>
 
         {{-- Лента комментариев --}}
         <div class="mt-10">
@@ -86,6 +108,18 @@
     </div>
     <script>
         $(document).ready(function () {
+                $.ajax({ type: "GET",
+                    url: "{{ route('post.view', $post->id) }}",
+                    success : function(response)
+                    {
+                        // $.each(response.data, function (i, item){
+                        //    $('#data-box').append(
+                        //        '<div style="border: solid 2px black"> <div>ID:' + item.id +'</div>'+
+                        //        '<div>CONTENT:' + item.content +'</div></div>'
+                        //    )
+                        // });
+                    }
+                });
             $('.btn-update-comment').click(function (){
                 let btn = $(this);
                 let form = btn.closest('form');

@@ -27,35 +27,62 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24"
                                  stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M19 9l-7 7-7-7" />
+                                      d="M19 9l-7 7-7-7"/>
                             </svg>
                         </button>
 
-                        <!-- Dropdown menu -->
+                        <!-- Dropdown -->
                         <div x-show="open" @click.outside="open = false"
-                             class="absolute left-0 mt-2 w-48 bg-white text-black rounded shadow-md z-50">
-                            @foreach($categories as $category)
-                                <div class="border-b last:border-none">
-                                    <button class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold"
-                                            @click="$refs['sub_{{ \Illuminate\Support\Str::slug($category->name) }}'].classList.toggle('hidden')">
+                             class="absolute left-0 mt-2 w-64 bg-white text-black rounded shadow-md z-50">
+
+                            @foreach($globalCategories as $category)
+                                <div class="border-b last:border-none" x-data="{ open1: false }">
+                                    <!-- 1 уровень -->
+                                    <button
+                                        class="w-full text-left px-4 py-2 hover:bg-gray-100 font-semibold flex justify-between"
+                                        @click="open1 = !open1">
                                         {{ $category->name }}
+                                        <span x-text="open1 ? '−' : '+'"></span>
                                     </button>
 
-                                    <!-- Подкатегории -->
-                                    <div x-ref="sub_{{ \Illuminate\Support\Str::slug($category->name) }}" class="hidden bg-gray-50">
+                                    <!-- 2 уровень -->
+                                    <div x-show="open1" class="bg-gray-50">
                                         @foreach($category->children as $sub)
-                                            <a href="{{ route('category.show', $sub->id) }}"
-                                               class="block px-6 py-2 hover:bg-gray-200 text-sm">
-                                                {{ $sub->name }}
-                                            </a>
+                                            <div class="border-b last:border-none px-4" x-data="{ open2: false }">
+                                                @if($sub->children->isEmpty())
+                                                    <a href="{{ route('category.show', $sub->id) }}"
+                                                       class="block px-2 py-2 hover:bg-gray-200 text-sm">
+                                                        {{ $sub->name }}
+                                                    </a>
+                                                @else
+                                                    <button
+                                                        class="w-full text-left px-2 py-2 hover:bg-gray-200 text-sm flex justify-between"
+                                                        @click="open2 = !open2">
+                                                        {{ $sub->name }}
+                                                        <span x-text="open2 ? '−' : '+'"></span>
+                                                    </button>
+
+                                                    <!-- 3 уровень -->
+                                                    <div x-show="open2" class="bg-gray-100 ml-4">
+                                                        @foreach($sub->children as $subCat)
+                                                            <a href="{{ route('category.show', $subCat->id) }}"
+                                                               class="block px-2 py-2 hover:bg-gray-200 text-sm">
+                                                                {{ $subCat->name }}
+                                                            </a>
+                                                        @endforeach
+                                                    </div>
+                                                @endif
+                                            </div>
                                         @endforeach
                                     </div>
                                 </div>
                             @endforeach
+
                         </div>
                     </div>
 
-                    @if(auth()->check() && auth()->user()->isAdmin())
+
+                @if(auth()->check() && auth()->user()->isAdmin())
                         <a href="{{ route('users.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Пользователи</a>
                     @endif
                     <a href="{{ route('about') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">О нас</a>

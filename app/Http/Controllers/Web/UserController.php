@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
-//    public function index()
-//    {
-//        $users = User::all();
-//        return view('users.index', compact('users'));
-//    }
+    public function index()
+    {
+        $users = User::all();
+        return view('users.index', compact('users'));
+    }
 
     public function show(User $user)
     {

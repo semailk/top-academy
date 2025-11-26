@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property string $content
+ * @property integer $user_id
+ * @property integer $category
+ */
 class Post extends Model
 {
     use HasFactory;
@@ -14,6 +19,7 @@ class Post extends Model
     protected $fillable = [
         'content',
         'user_id',
+        'category_id',
     ];
 
     public function user(): BelongsTo
@@ -29,5 +35,10 @@ class Post extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function postViews(): HasMany
+    {
+        return $this->hasMany(PostView::class);
     }
 }

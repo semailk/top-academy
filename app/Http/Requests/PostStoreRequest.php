@@ -22,9 +22,13 @@ class PostStoreRequest extends FormRequest
                     'content' => [
                         'required',
                         'string',
-                        'min:5',
-                        'max:10',
-                        new LanguageRule()
+                        'min:2',
+                        'max:255',
+//                        new LanguageRule()
+                    ],
+                    'category_id' => [
+                        'exists:categories,id',
+                        'required'
                     ]
                 ];
             case 'PUT':
@@ -32,9 +36,13 @@ class PostStoreRequest extends FormRequest
                     'content' => [
                         'required',
                         'string',
-                        'min:10',
-                        'max:500',
-                        new LanguageRule()
+                        'min:2',
+                        'max:255',
+//                        new LanguageRule()
+                    ],
+                    'category_id' => [
+                        'exists:categories,id',
+                        'required'
                     ]
                 ];
             case 'DELETE':
