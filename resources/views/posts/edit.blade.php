@@ -22,6 +22,17 @@
                         <option value="{{ $category->id }}" @if($category->id === $post->category->id) selected @endif>{{ $category->name }}</option>
                     @endforeach
                 </select>
+
+                <select class="w-full mt-3 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        multiple name="tags[]" id="tags">
+                    @foreach($tags as $tag)
+                        <option value="{{ $tag->id }}"
+                                @if($post->tags->contains($tag->id)) selected @endif>
+                            {{ $tag->name }}
+                        </option>
+                    @endforeach
+                </select>
+
             </div>
 
 

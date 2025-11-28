@@ -43,6 +43,9 @@ class PostStoreRequest extends FormRequest
                     'category_id' => [
                         'exists:categories,id',
                         'required'
+                    ],
+                    'tags' => [
+                        'array',
                     ]
                 ];
             case 'DELETE':

@@ -17,7 +17,18 @@
 
     @foreach ($posts as $post)
         <div class="bg-white rounded-xl shadow p-6 border border-gray-100 hover:shadow-lg transition">
-
+            {{-- TAGS --}}
+            @if($post->tags->isNotEmpty())
+                <div class="mb-4 flex flex-wrap gap-2">
+                    @foreach($post->tags as $tag)
+                        <span
+                            class="px-2 py-1 text-sm font-medium rounded-full border"
+                            style="color: {{ $tag->pivot->color }}; border-color: {{ $tag->pivot->color }}; background: {{ $tag->pivot->color }}15">
+                {{ $tag->name }}
+            </span>
+                    @endforeach
+                </div>
+            @endif
             <!-- Верхняя часть поста -->
             <div class="flex justify-between items-start mb-4">
 

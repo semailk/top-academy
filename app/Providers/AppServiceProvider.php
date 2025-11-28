@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\Category;
+use App\Models\Post;
+use App\Observers\PostObserver;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -29,5 +31,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('*', function ($view) use ($globalCategories) {
             $view->with('globalCategories', $globalCategories);
         });
+
+        Post::observe(PostObserver::class);
     }
 }
