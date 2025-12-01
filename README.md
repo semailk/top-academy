@@ -56,3 +56,5 @@ Top Academy сочетает современные технологии, пра
 4. Создать ключ для .env через команду (php artisan key:generate).
 5. Также для работа скачивания картинки и отображения запускаем команду (php artisan storage:link).
 6. Также по ситуации настраиваем базу данных (mysql, postgres, sqlite). Для простоты создаем файл database/database.sqlite и sqlite сразу подцепит вход в бд.
+7. php artisan serve (для запуска сервера локально)
+8. Дальше делаем переход <a href="http://localhost:8000">Сюда</a>
