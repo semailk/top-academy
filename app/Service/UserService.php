@@ -26,7 +26,7 @@ class UserService
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->route('posts.index');
+            return redirect()->route('posts.index', ['lang' => app()->getLocale()]);
         }
 
         return back()->withErrors([

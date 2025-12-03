@@ -8,6 +8,7 @@ use App\Http\Controllers\Web\PostCommentController;
 use App\Http\Controllers\Web\PostController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Controllers\Web\VerifyController;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Support\Facades\Route;
 
 //use Illuminate\Support\Facades\Auth;
@@ -15,12 +16,18 @@ use Illuminate\Support\Facades\Route;
 
 // Redirect root to login
 Route::get('/', function () {
-    return redirect()->route('login');
+//    dd(\Illuminate\Support\Facades\Auth::user());
+    if (!in_array(explode('/', request()->path())[0], ['ru', 'en', 'az'])) {
+        return redirect('/' . session('locale') . '/login');
+    }
 });
 
+Route::post('login', [AuthController::class, 'login'])->name('login');
+
+Route::prefix( '{lang}')-> middleware(SetLocale::class)->group( function () {
 // Auth routes
-Route::get('login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('login', [AuthController::class, 'login']);
+Route::get('login', [AuthController::class, 'showLogin']);
+
 Route::get('register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('register', [AuthController::class, 'register']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -58,10 +65,6 @@ Route::middleware('auth')->group(function () {
     // Category
     Route::get('/show/{category}', [CategoryController::class, 'show'])->name('category.show');
 
-    // About
-    Route::get('/about', function () {
-        return view('about');
-    })->name('about');
     // Прямой роут для аватарок
     Route::get('/avatar/{filename}', function ($filename) {
         $path = storage_path('app/public/avatars/' . $filename);
@@ -79,8 +82,15 @@ Route::middleware('auth')->group(function () {
     })->name('avatar.direct');
 });
 
+
+    // About
+    Route::get('/about', function () {
+        return view('about');
+    })->name('about');
+
 Route::post('/email/verify/request', [VerifyController::class, 'send'])
     ->middleware('auth:sanctum');
 
 Route::get('/email/verify/{id}/{hash}', [VerifyController::class, 'verify'])
     ->name('verification.verify');
+});

@@ -16,8 +16,8 @@
             <div class="flex justify-between items-center py-4">
                 <!-- Левая часть - меню -->
                 <div class="flex space-x-4 items-center">
-                    <a href="{{ route('posts.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Главная</a>
-                    <a href="{{ route('posts.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Посты</a>
+                    <a href="{{ route('posts.index', ['lang' => app()->getLocale()]) }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">@lang('messages.main')</a>
+                    <a href="{{ route('posts.index', ['lang' => app()->getLocale()]) }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Посты</a>
 
                     <!-- Dropdown Категории -->
                     <div x-data="{ open: false }" class="relative">
@@ -50,7 +50,7 @@
                                         @foreach($category->children as $sub)
                                             <div class="border-b last:border-none px-4" x-data="{ open2: false }">
                                                 @if($sub->children->isEmpty())
-                                                    <a href="{{ route('category.show', $sub->id) }}"
+                                                    <a href="{{ route('category.show', ['lang' => app()->getLocale(), 'category' => $sub->id]) }}"
                                                        class="block px-2 py-2 hover:bg-gray-200 text-sm">
                                                         {{ $sub->name }}
                                                     </a>
@@ -85,7 +85,7 @@
                 @if(auth()->check() && auth()->user()->isAdmin())
                         <a href="{{ route('users.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Пользователи</a>
                     @endif
-                    <a href="{{ route('about') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">О нас</a>
+                    <a href="{{ route('about', ['lang' => app()->getLocale()]) }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">О нас</a>
                 </div>
 
 
@@ -100,13 +100,13 @@
                     <span class="text-blue-100">Добро пожаловать, {{ Auth::user()->username }}!</span>
 
                     <!-- Кнопка Профиль -->
-                    <a href="{{ route('profile') }}"
+                    <a href="{{ route('profile', ['lang' => app()->getLocale()]) }}"
                         class="bg-blue-500 hover:bg-blue-400 px-4 py-2 rounded transition">
                         Профиль
                     </a>
 
                     <!-- Кнопка Выйти -->
-                    <form method="POST" action="{{ route('logout') }}" class="inline">
+                    <form method="POST" action="{{ route('logout', ['lang' => app()->getLocale()]) }}" class="inline">
                         @csrf
                         <button type="submit"
                             class="bg-red-500 hover:bg-red-400 px-4 py-2 rounded transition">

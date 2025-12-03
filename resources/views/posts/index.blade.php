@@ -6,7 +6,7 @@
     @if(isset($category) && $category)
         <span class="text-3xl font-bold">{{ $category->name }}</span>
     @endif
-    <a href="{{ route('posts.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+    <a href="{{ route('posts.create', ['lang' => app()->getLocale()]) }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
         Создать пост
     </a>
 
@@ -41,14 +41,14 @@
                 <!-- Правая часть: кнопки -->
                 <div class="flex space-x-3">
 
-                    <a href="{{ route('posts.edit', $post) }}"
+                    <a href="{{ route('posts.edit', ['lang' => app()->getLocale(), 'post' => $post, 'id' => $post->id]) }}"
                        class="text-blue-600 hover:text-blue-800 font-medium">
                         ✏ Редактировать
                     </a>
 
                     @if(Auth::id() === $post->user_id || Auth::user()->isAdmin())
                         <form method="POST"
-                              action="{{ route('posts.destroy', $post) }}"
+                              action="{{ route('posts.destroy', ['lang' => app()->getLocale(), 'post' => $post, 'id' => $post->id]) }}"
                               class="inline">
                             @csrf
                             @method('DELETE')
@@ -78,8 +78,7 @@
                          $isFavorite = in_array($post->id, $favorites);
                     }
                 @endphp
-
-                <a href="{{ route('favorite.session', ['post_id' => $post->id]) }}"
+                <a href="{{ route('favorite.session', ['post_id' => $post->id, 'lang' => app()->getLocale()]) }}"
                    class="
         px-4 py-2 rounded-md text-white mr-5
         transition
