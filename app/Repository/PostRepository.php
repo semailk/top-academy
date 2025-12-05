@@ -7,6 +7,7 @@ use App\Models\Post;
 use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Ramsey\Collection\Collection;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class PostRepository

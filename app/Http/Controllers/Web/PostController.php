@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\PostStoreRequest;
 use App\Models\Post;
-use App\Models\Tag;
 use App\Repository\CategoryRepository;
 use App\Repository\PostCommentRepository;
 use App\Repository\PostRepository;
+use App\Repository\TagRepository;
 use App\Service\PostService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -20,7 +20,8 @@ class PostController extends Controller
         private readonly PostRepository        $postRepository,
         private readonly CategoryRepository    $categoryRepository,
         private readonly PostService           $postService,
-        private readonly PostCommentRepository $postCommentRepository
+        private readonly PostCommentRepository $postCommentRepository,
+        private readonly TagRepository         $tagRepository
     )
     {
     }
@@ -57,29 +58,19 @@ class PostController extends Controller
     public function edit(string $lang, int $postId): View
     {
         $post = $this->postService->getPostByCache($postId);
-        $tags = Tag::query()->get();
 
         return view('posts.edit', [
             'post' => $post,
             'categories' => $this->categoryRepository->getAllChildren(),
             'comments' => $this->postCommentRepository->getAllPaginated($post, self::PER_PAGE_ITEMS),
+            'tags' => $this->tagRepository->getAll()
         ]);
     }
 
     public function update($lang, PostStoreRequest $postStoreRequest, Post $post): RedirectResponse
     {
         $this->postRepository->update($post, $postStoreRequest);
-
-        /** @var array<int> $arrayTagsIds */
-        $arrayTagsIds = $postStoreRequest->input('tags');
-        $syncData = [];
-        foreach ($arrayTagsIds as $tagId) {
-            $syncData[$tagId] = ['color' => $this->randomColor()];
-        }
-
-        $post->update($postStoreRequest->all());
-
-        $post->tags()->sync($syncData);
+        $this->tagRepository->sync($post, $postStoreRequest->get('tags'));
 
         return redirect()->back()->with('success', 'Пост успешно обновлен!');
     }
@@ -88,10 +79,5 @@ class PostController extends Controller
     {
         $this->postRepository->destroy($post);
         return redirect()->route('posts.index')->with('success', 'Пост успешно удален!');
-    }
-
-    public function randomColor(): string
-    {
-        return sprintf('#%06X', mt_rand(0, 0xFFFFFF));
     }
 }
