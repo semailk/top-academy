@@ -124,9 +124,4 @@ class UserController extends Controller
 
         return redirect()->route('profile')->with('success', 'Аватарка успешно удалена!');
     }
-
-    public function verifyUser(Request $request)
-    {
-
-    }
 }

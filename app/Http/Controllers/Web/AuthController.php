@@ -2,21 +2,22 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Events\UserRegistered;
 use App\Http\Requests\RegisterRequest;
-use App\Jobs\PasswordResetMailSendJob;
-use App\Jobs\VerifyMailSendJob;
-use App\Models\Role;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
+use App\Repository\UserRepository;
+use App\Service\UserService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class AuthController extends Controller
 {
+    public function __construct(
+        private UserRepository $userRepository,
+        private UserService    $userService,
+    ){}
+
     public function showLogin(): View
     {
         return view('auth.login');
@@ -31,52 +32,20 @@ class AuthController extends Controller
     {
         $validator = $registerRequest->validated();
 
-        $user = User::query()->create([
-            'username' => $validator['username'],
-            'email' => $validator['email'],
-            'password' => Hash::make($validator['password']),
-            'status' => 'user',
-            'role_id' => Role::query()
-                ->whereRaw('LOWER(name) = ?', [strtolower('uSeR')])
-                ->first()?->id
-        ]);
-
-        dispatch(new VerifyMailSendJob($user));
-
-        Auth::login($user);
+        $user = $this->userRepository->store($validator['username'], $validator['email'], $validator['password']);
+        event(new UserRegistered($user));
 
         return redirect()->route('posts.index');
     }
 
     public function login(Request $request): RedirectResponse
     {
-        // Позволяем логин по username или email
-        $loginType = filter_var($request->input('login'), FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-
-        $request->merge([$loginType => $request->input('login')]);
-
-        $credentials = $request->validate([
-            'username' => 'required_without:email|string|exists:users,username',
-            'email' => 'required_without:username|email|exists:users,email',
-            'password' => 'required|string',
-        ]);
-
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
-            return redirect()->route('posts.index');
-        }
-
-        return back()->withErrors([
-            'login' => 'Неверные учетные данные.',
-        ])->onlyInput('login');
+        return $this->userService->login($request);
     }
 
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-        return redirect()->route('login');
+        return $this->userService->logout($request);
     }
 
     public function showResetPassword(): View
@@ -86,42 +55,16 @@ class AuthController extends Controller
 
     public function resetPassword(Request $request): RedirectResponse
     {
-        $user = User::query()
-            ->where('username', $request->input('username'))
-            ->first();
-
-        if ($user) {
-            $maskedEmail = Str::mask($user->email, '*', 3, -3);
-
-            dispatch(new PasswordResetMailSendJob($user));
-            return back()->with(['success' => 'Письмо с сбросом пароля отправлена на почту ' . $maskedEmail .'.' ]);
-        }
-
-        return back()->withErrors(['errors' => 'Данного пользователя не существует!']);
+        return $this->userService->resetPassword($request);
     }
 
-    public function userPasswordReset(Request $request,User $user, string $hash): View
+    public function userPasswordReset(Request $request, User $user, string $hash): View
     {
-        if (! $request->hasValidSignature()) {
-            abort(400, 'Invalid or expired link');
-        }
-
-        if ($hash !== sha1($user->email)) {
-            abort(400, 'Invalid signature');
-        }
-
-        return view('auth.passwords.user-password-reset', ['user' => $user]);
+        return $this->userService->userPasswordReset($request, $user, $hash);
     }
 
     public function changePassword(Request $request, User $user): RedirectResponse
     {
-        $request->validate([
-            'password' => 'required|string|min:6|confirmed'
-        ]);
-
-        $user->password = Hash::make($request->input('password'));
-        $user->save();
-
-        return redirect()->route('login');
+        return $this->userService->changePassword($request, $user);
     }
 }

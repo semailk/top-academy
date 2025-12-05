@@ -4,7 +4,7 @@
 <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-md p-6">
     <h1 class="text-3xl font-bold mb-6">Создать пост</h1>
 
-    <form method="POST" action="{{ route('posts.store') }}">
+    <form method="POST" action="{{ route('posts.store', ['lang' => app()->getLocale()]) }}">
         @csrf
 
         <div class="mb-6">
@@ -26,7 +26,7 @@
             <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
                 Опубликовать
             </button>
-            <a href="{{ route('posts.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+            <a href="{{ route('posts.index', ['lang' => app()->getLocale()]) }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
                 Отмена
             </a>
         </div>

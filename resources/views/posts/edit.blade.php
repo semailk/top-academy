@@ -5,7 +5,7 @@
         <h1 class="text-3xl font-bold mb-6">Редактировать пост</h1>
 
         {{-- Форма редактирования поста --}}
-        <form method="POST" action="{{ route('posts.update', $post) }}">
+        <form method="POST" action="{{ route('posts.update', ['lang' => app()->getLocale(), 'post' => $post]) }}">
             @csrf
             @method('PUT')
 
@@ -15,11 +15,11 @@
                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           required>{{ old('content', $post->content) }}</textarea>
             </div>
-
             <div class="mb-6">
                 <select name="category_id" id="category" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                     @foreach($categories as $category)
-                        <option value="{{ $category->id }}" @if($category->id === $post->category->id) selected @endif>{{ $category->name }}</option>
+
+                        <option value="{{ $category->id }}" @if($category->id === $post->category_id) selected @endif>{{ $category->name }}</option>
                     @endforeach
                 </select>
 
@@ -43,7 +43,7 @@
                         Обновить
                     </button>
                 @endif
-                <a href="{{ route('posts.index') }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                <a href="{{ route('posts.index', ['lang' => app()->getLocale()]) }}" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
                     Отмена
                 </a>
             </div>
@@ -73,7 +73,7 @@
                     </div>
 
                     <div class="flex items-center gap-3 mt-3">
-                        <form action="{{ route('comments.update', $comment->id) }}" method="POST" class="comment-update-form">
+                        <form action="{{ route('comments.update', ['lang' => app()->getLocale(), 'postComment' => $comment->id]) }}" method="POST" class="comment-update-form">
                             @csrf
                             @method('PATCH')
                             <button type="button" data-id="{{ $comment->id }}"
@@ -82,7 +82,7 @@
                             </button>
                         </form>
 
-                        <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="comment-delete-form">
+                        <form action="{{ route('comments.destroy', ['lang' => app()->getLocale(), 'postComment' => $comment]) }}" method="POST" class="comment-delete-form">
                             @csrf
                             @method('DELETE')
                             <button type="button" data-id="{{ $comment->id }}"
@@ -120,7 +120,7 @@
     <script>
         $(document).ready(function () {
                 $.ajax({ type: "GET",
-                    url: "{{ route('post.view', $post->id) }}",
+                    url: "{{ route('post.view', ['lang' => app()->getLocale(), 'post' => $post] ) }}",
                     success : function(response)
                     {
                         // $.each(response.data, function (i, item){

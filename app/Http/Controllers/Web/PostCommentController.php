@@ -31,29 +31,29 @@ class PostCommentController
         $newPostComment->comment = $validated['comment'];
         $newPostComment->save();
 
-        return redirect()->route('posts.edit', $newPostComment->post_id)->with('success', 'Коммент успешно добавлен!');
+        return redirect()->route('posts.edit', ['lang' => app()->getLocale(), 'id' => $newPostComment->post_id])->with('success', 'Коммент успешно добавлен!');
     }
 
-    public function update(PostComment $postComment, Request $request): RedirectResponse
+    public function update(string $lang, PostComment $postComment, Request $request): RedirectResponse
     {
         $validate = $request->validate([
             'comment' => 'required|min:2|max:255',
         ]);
-        try {
-            /** @var User $user */
-            $user = Auth::user();
 
-            if ($postComment->user_id != $user->id) {
-                throw new AccessDeniedHttpException();
-            }
+        /** @var User $user */
+        $user = Auth::user();
+        if ($postComment->user_id != $user->id && !$user->isAdmin()) {
+            throw new AccessDeniedHttpException();
+        }
+        try {
             $postComment->comment = $validate['comment'];
             $postComment->save();
 
             return redirect()
-                ->route('posts.edit', $postComment->post_id)
+                ->route('posts.edit', ['lang' => app()->getLocale(), 'id' => $postComment->post_id])
                 ->with('success', 'Коммент успешно обновлен!');
-        }catch (\Exception $exception){
-            throw new BadRequestException();
+        } catch (\Exception $exception) {
+            abort($exception->getCode(), $exception->getMessage());
         }
     }
 

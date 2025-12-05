@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property string $content
  * @property integer $user_id
- * @property integer $category
+ * @property integer $category_id
  */
 class Post extends Model
 {
