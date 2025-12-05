@@ -3,88 +3,76 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Requests\PostStoreRequest;
-use App\Models\Category;
 use App\Models\Post;
-use App\Models\User;
+use App\Repository\CategoryRepository;
+use App\Repository\PostCommentRepository;
+use App\Repository\PostRepository;
+use App\Service\PostService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\View\View;
 
 class PostController extends Controller
 {
-    public function index()
+    private const PER_PAGE_ITEMS = 10;
+
+    public function __construct(
+        private readonly PostRepository        $postRepository,
+        private readonly CategoryRepository    $categoryRepository,
+        private readonly PostService           $postService,
+        private readonly PostCommentRepository $postCommentRepository
+    )
     {
-        $posts = Post::with('user')->paginate(10);
-        return view('posts.index', compact('posts'));
     }
 
-    public function create()
+    public function index(): View
     {
-        $categories = Category::DontParent()->get();
+        return view('posts.index', [
+            'posts' => $this->postRepository->getAllPaginated(self::PER_PAGE_ITEMS),
+        ]);
+    }
 
+    public function create(): View
+    {
         return view('posts.create', [
-            'categories' => $categories,
+            'categories' => $this->categoryRepository,
         ]);
     }
 
-    public function store(PostStoreRequest $request): RedirectResponse
+    public function store(PostStoreRequest $postStoreRequest): RedirectResponse
     {
-        $userId = Auth::user()->id;
+        $this->postRepository->store($postStoreRequest);
 
-        Post::query()->create([
-            'content' => $request->get('content'),
-            'user_id' => $userId,
-            'category_id' => $request->get('category_id'),
+        return redirect()
+            ->route('posts.index')
+            ->with('success', 'Пост успешно создан!');
+    }
+
+
+    public function show(Post $post): View
+    {
+        return view('posts.show', $this->postRepository->show($post));
+    }
+
+    public function edit(string $lang, int $postId): View
+    {
+        $post = $this->postService->getPostByCache($postId);
+
+        return view('posts.edit', [
+            'post' => $post,
+            'categories' => $this->categoryRepository->getAllChildren(),
+            'comments' => $this->postCommentRepository->getAllPaginated($post, self::PER_PAGE_ITEMS),
         ]);
-
-        return redirect()->route('posts.index')->with('success', 'Пост успешно создан!');
     }
 
-
-    public function show(Post $post)
+    public function update($lang, PostStoreRequest $postStoreRequest, Post $post): RedirectResponse
     {
-        return view('posts.show',  compact('post'));
-    }
-
-    public function edit($postId)
-    {
-        if (Cache::has('post_' . $postId)){
-         $post = Cache::get('post_' . $postId);
-        }else{
-            $post = Post::query()->findOrFail($postId);
-            Cache::put('post_' . $postId, $post, 60);
-        }
-
-        $comments = $post->comments()->orderByDesc('created_at')->paginate(3);
-        $categories = Category::query()->with('parent')->whereNotNull('parent_id')->get();
-
-        return view('posts.edit', compact('post', 'comments', 'categories'));
-    }
-
-    public function update(PostStoreRequest $postStoreRequest, Post $post)
-    {
-        // Безопасная проверка на админа
-        $isAdmin = Auth::user()->status === 'admin';
-        if ($post->user_id !== Auth::id() && !$isAdmin) {
-            abort(403);
-        }
-
-        $post->update($postStoreRequest->all());
-
+        $this->postRepository->update($post, $postStoreRequest);
         return redirect()->back()->with('success', 'Пост успешно обновлен!');
     }
 
-    public function destroy(Post $post)
+    public function destroy(Post $post): RedirectResponse
     {
-        /** @var User $user */
-        $user = Auth::user();
-        $isAdmin = $user->role->name === 'admin';
-        if ($post->user_id !== Auth::id() && !$isAdmin) {
-            abort(403);
-        }
-
-        $post->delete();
-
+        $this->postRepository->destroy($post);
         return redirect()->route('posts.index')->with('success', 'Пост успешно удален!');
     }
 }

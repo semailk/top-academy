@@ -83,7 +83,7 @@
 
 
                 @if(auth()->check() && auth()->user()->isAdmin())
-                        <a href="{{ route('users.index') }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Пользователи</a>
+                        <a href="{{ route('users.index', ['lang' => app()->getLocale()]) }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">Пользователи</a>
                     @endif
                     <a href="{{ route('about', ['lang' => app()->getLocale()]) }}" class="hover:bg-blue-700 px-3 py-2 rounded transition">О нас</a>
                 </div>
